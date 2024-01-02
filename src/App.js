@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
+import analyzeImage from './azure-image-analysis';
 
 function App() {
   const [url, setUrl] = useState('');
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleImageAnalysis = () => {
-    // Aqui você pode adicionar a lógica para a análise de imagem
-    console.log('Analisando a imagem: ', url);
+  const handleImageAnalysis = async () => {
+    setLoading(true);
+    const data = await analyzeImage(url);
+    setResults(data);
+    setLoading(false);
   };
 
-  const handleImageGeneration = () => {
-    // Aqui você pode adicionar a lógica para a geração de imagem
-    console.log('Gerando a imagem para a URL: ', url);
+  const DisplayResults = () => {
+    if (!results) return null;
+    return (
+      <div>
+        <h2>Resultados:</h2>
+        <img src={url} alt="Analyzed" />
+        <pre>{JSON.stringify(results, null, 2)}</pre>
+      </div>
+    );
   };
 
   return (
@@ -22,8 +33,10 @@ function App() {
         onChange={(e) => setUrl(e.target.value)}
         placeholder="Insira a URL da imagem"
       />
-      <button onClick={handleImageAnalysis}>Analisar Imagem</button>
-      <button onClick={handleImageGeneration}>Gerar Imagem</button>
+      <button onClick={handleImageAnalysis} disabled={loading}>
+        {loading ? 'Analisando...' : 'Analisar Imagem'}
+      </button>
+      <DisplayResults />
     </div>
   );
 }
