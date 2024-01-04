@@ -1,28 +1,35 @@
-const axios = require('axios');
-
-async function analyzeImage(imageUrl) {
-  const endpoint = 'https://visaodeia.cognitiveservices.azure.com/';
+const analyzeImage = async (imageUrl) => {
   const params = {
-    visualFeatures: 'Categories,Description,Tags',
-    details: 'Landmarks',
-    language: 'pt',
-  };
-  const headers = {
-    'Content-Type': 'application/json',
-    'Ocp-Apim-Subscription-Key': '9cbef780337e459793f317d0ff64d544',
+    features: ['tags'],
+    'model-version': 'latest',
+    language: 'en',
+    'gender-neutral-caption': 'False',
   };
 
   try {
-    const response = await axios.post(
-      endpoint,
-      { url: imageUrl },
-      { params, headers }
+    const response = await fetch(
+      `https://visaodeia.cognitiveservices.azure.com/computervision/imageanalysis:analyze?api-version=2023-10-01&${new URLSearchParams(
+        params
+      )}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '9cbef780337e459793f317d0ff64d544',
+        },
+        body: JSON.stringify({ url: imageUrl }),
+      }
     );
-    return response.data;
+
+    if (response.ok) {
+      return await response.json();
+    } else {
+      const errorData = await response.json();
+      throw new Error(`Error analyzing image: ${errorData.error.message}`);
+    }
   } catch (error) {
-    console.error('Error analyzing image:', error.message);
     throw error;
   }
-}
+};
 
-module.exports = analyzeImage;
+export default analyzeImage;

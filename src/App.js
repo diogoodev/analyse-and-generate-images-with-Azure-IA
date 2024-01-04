@@ -1,44 +1,41 @@
 import React, { useState } from 'react';
+import DisplayResults from './DisplayResults';
 import analyzeImage from './azure-image-analysis';
 
-function App() {
-  const [url, setUrl] = useState('');
+const App = () => {
+  const [imageUrl, setImageUrl] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleImageAnalysis = async () => {
+  const handleAnalyzeClick = async () => {
     setLoading(true);
-    const data = await analyzeImage(url);
-    setResults(data);
-    setLoading(false);
-  };
-
-  const DisplayResults = () => {
-    if (!results) return null;
-    return (
-      <div>
-        <h2>Resultados:</h2>
-        <img src={url} alt="Analyzed" />
-        <pre>{JSON.stringify(results, null, 2)}</pre>
-      </div>
-    );
+    try {
+      const response = await analyzeImage(imageUrl);
+      setResults(response);
+    } catch (error) {
+      console.error('Error analyzing image:', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <h1>Título</h1>
+      <h1>Computer Vision</h1>
+      <p>Analyze an image using Azure Computer Vision</p>
+
       <input
         type="text"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        placeholder="Insira a URL da imagem"
+        value={imageUrl}
+        onChange={(e) => setImageUrl(e.target.value)}
       />
-      <button onClick={handleImageAnalysis} disabled={loading}>
-        {loading ? 'Analisando...' : 'Analisar Imagem'}
+      <button onClick={handleAnalyzeClick} disabled={loading}>
+        Analyze
       </button>
-      <DisplayResults />
+      {loading && <p>Processing...</p>}
+      {results && <DisplayResults results={results} imageUrl={imageUrl} />}
     </div>
   );
-}
+};
 
 export default App;
