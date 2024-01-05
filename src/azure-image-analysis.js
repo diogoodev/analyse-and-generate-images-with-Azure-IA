@@ -1,21 +1,35 @@
-const analyzeImage = async (imageUrl) => {
-  const params = {
-    features: ['tags'],
-    'model-version': 'latest',
-    language: 'en',
-    'gender-neutral-caption': 'False',
-  };
+// azure-image-analysis.js
 
+import fetch from 'node-fetch';
+
+const isConfigured = () => {
+  // Check if environment variables for Azure Computer Vision are set
+  return (
+    process.env.REACT_APP_VISION_ENDPOINT && process.env.REACT_APP_VISION_KEY
+  );
+};
+
+const analyzeImage = async (imageUrl) => {
+  if (!isConfigured()) {
+    throw new Error('Azure Computer Vision is not properly configured.');
+  }
   try {
+    const params = {
+      features: ['tags'],
+      'model-version': 'latest',
+      language: 'en',
+      'gender-neutral-caption': 'False',
+    };
+
+    const AZURE_ENDPOINT = process.env.REACT_APP_VISION_ENDPOINT;
+    const AZURE_API = process.env.REACT_APP_VISION_KEY;
     const response = await fetch(
-      `https://visaodeia.cognitiveservices.azure.com/computervision/imageanalysis:analyze?api-version=2023-10-01&${new URLSearchParams(
-        params
-      )}`,
+      `${AZURE_ENDPOINT}${new URLSearchParams(params)}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '9cbef780337e459793f317d0ff64d544',
+          'Ocp-Apim-Subscription-Key': AZURE_API,
         },
         body: JSON.stringify({ url: imageUrl }),
       }
@@ -32,4 +46,4 @@ const analyzeImage = async (imageUrl) => {
   }
 };
 
-export default analyzeImage;
+export { analyzeImage, isConfigured };

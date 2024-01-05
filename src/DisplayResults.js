@@ -8,12 +8,25 @@ const DisplayResults = ({ results, imageUrl }) => {
       <h2>Computer Vision Analysis</h2>
       <p>Computer Vision analyses:</p>
 
+      {/* Displaying the analyzed image */}
       {imageUrl && (
         <img
           src={imageUrl}
-          alt="Analyzed Image"
+          alt=""
           style={{ width: '200px', height: '200px' }}
         />
+      )}
+
+      {/* Displaying the generated image */}
+      {results && results.generatedImageUrl && (
+        <div>
+          <h3>Generated Image:</h3>
+          <img
+            src={results.generatedImageUrl}
+            alt=""
+            style={{ width: '200px', height: '200px' }}
+          />
+        </div>
       )}
 
       <h3>Analysis Results:</h3>
