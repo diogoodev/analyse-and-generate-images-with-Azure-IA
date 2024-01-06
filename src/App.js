@@ -11,9 +11,10 @@ import {
 
 const App = () => {
   const [inputContent, setInputContent] = useState('');
+  const [apiInput, setApiInput] = useState('');
   const [analyzeResults, setAnalyzeResults] = useState(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
-  const [setGenerateResults] = useState(null);
+  //const [generateResults, setGenerateResults] = useState(null);
   const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -34,7 +35,6 @@ const App = () => {
     try {
       // Reset states
       setGeneratedImageUrl(null);
-      setGenerateResults(null);
       setErrorMessage('');
 
       setLoading(true);
@@ -54,32 +54,32 @@ const App = () => {
   const handleGenerateClick = async () => {
     try {
       // Reset states
+      setApiInput(inputContent);
+      setInputContent('');
       setAnalyzeResults(null);
+      setGeneratedImageUrl(null);
       setErrorMessage('');
       setLoading(true);
+
       const generatedImage = await generateImage(inputContent);
-      setGenerateResults(null);
+
       setGeneratedImageUrl(generatedImage.generatedImageUrl);
-      setGenerateResults({
-        prompt: inputContent,
-        generatedImageUrl: generatedImage.generatedImageUrl,
-      });
+
       if (!isUrl(inputContent) && generatedImage.generatedImageUrl) {
         setDisplayImageUrl(generatedImage.generatedImageUrl);
       }
     } catch (error) {
-      // Set the error message in the state
+      // Set the error message in he state
       setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }; // Remove the semicolon here
 
   const handleClearResultsClick = () => {
     setInputContent('');
     setAnalyzeResults(null);
     setGeneratedImageUrl(null);
-    setGenerateResults(null);
     setErrorMessage('');
   };
 
@@ -142,7 +142,7 @@ const App = () => {
               results={analyzeResults || { generatedImageUrl }}
               displayImageUrl={displayImageUrl}
               isGenerated={!!generatedImageUrl}
-              inputContent={inputContent}
+              inputContent={apiInput}
             />
           )}
         </>
