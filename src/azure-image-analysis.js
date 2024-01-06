@@ -3,10 +3,15 @@
 import fetch from 'node-fetch';
 
 const isConfigured = () => {
-  // Check if environment variables for Azure Computer Vision are set
-  return (
-    process.env.REACT_APP_VISION_ENDPOINT && process.env.REACT_APP_VISION_KEY
-  );
+  const isApiKeyConfigured =
+    process.env.REACT_APP_VISION_KEY &&
+    process.env.REACT_APP_VISION_KEY.trim() !== '';
+
+  const isEndpointConfigured =
+    process.env.REACT_APP_VISION_ENDPOINT &&
+    process.env.REACT_APP_VISION_ENDPOINT.trim() !== '';
+
+  return isApiKeyConfigured && isEndpointConfigured;
 };
 
 const analyzeImage = async (imageUrl) => {

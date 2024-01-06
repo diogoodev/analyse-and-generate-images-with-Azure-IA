@@ -3,8 +3,11 @@
 import OpenAI from 'openai';
 
 const isConfigured = () => {
-  // Check if environment variables for OpenAI are set
-  return process.env.REACT_APP_OPENAI_API_KEY !== undefined;
+  const isApiKeyConfigured =
+    process.env.REACT_APP_OPENAI_API_KEY &&
+    process.env.REACT_APP_OPENAI_API_KEY.trim() !== '';
+
+  return isApiKeyConfigured;
 };
 
 const openai = new OpenAI({

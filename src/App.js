@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DisplayResults from './DisplayResults';
 import {
   analyzeImage,
@@ -16,18 +16,30 @@ const App = () => {
   const [generateResults, setGenerateResults] = useState(null);
   const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true);
 
-  useEffect(() => {
-    setIsConfigured(isVisionConfigured() && isOpenAIConfigured());
-  }, []);
+  const visionConfigured = isVisionConfigured();
+  const openAIConfigured = isOpenAIConfigured();
 
-  if (!isConfigured) {
+  let errorMessage = '';
+
+  if (!visionConfigured) {
+    errorMessage =
+      'Vision Key or Endpoint is not configured for cognitive services.';
+  }
+
+  if (!openAIConfigured) {
+    errorMessage = 'OpenAI Key is not configured.';
+  }
+
+  if (!visionConfigured && !openAIConfigured) {
+    errorMessage = 'Both Vision and OpenAI Keys are not configured.';
+  }
+
+  if (errorMessage) {
     return (
-      <p>
-        O aplicativo não está configurado corretamente. Por favor, verifique
-        suas variáveis de ambiente.
-      </p>
+      <div>
+        <p>{errorMessage}</p>
+      </div>
     );
   }
 
@@ -35,16 +47,11 @@ const App = () => {
     try {
       new URL(input);
       return true;
-    } catch (_) {
+    } catch {
       return false;
     }
   };
-
   const handleAnalyzeClick = async () => {
-    if (!isConfigured) {
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await analyzeImage(inputContent);
@@ -64,10 +71,6 @@ const App = () => {
   };
 
   const handleGenerateClick = async () => {
-    if (!isConfigured) {
-      return;
-    }
-
     setLoading(true);
     try {
       const generatedImage = await generateImage(inputContent);
@@ -100,8 +103,6 @@ const App = () => {
 
   return (
     <div>
-      {!isConfigured && <p>Warning: The app is not properly configured.</p>}
-
       <h1>Computer Vision</h1>
       <p>
         Analyze an image using Azure Computer Vision or generate an image using
