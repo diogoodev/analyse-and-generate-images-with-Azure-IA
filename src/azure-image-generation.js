@@ -1,5 +1,3 @@
-// azure-image-generation.js
-
 import OpenAI from 'openai';
 
 const isConfigured = () => {
@@ -27,7 +25,7 @@ const generateImage = async (prompt) => {
 
     const image = await openai.images.generate(
       {
-        model: 'dall-e-3',
+        model: 'dall-e-2',
         prompt: prompt,
       },
       { headers }
@@ -47,7 +45,7 @@ const generateImage = async (prompt) => {
       openaiResponse: image.data,
     };
   } catch (error) {
-    throw error;
+    throw new Error(`Error generating image: ${error.code}`);
   }
 };
 

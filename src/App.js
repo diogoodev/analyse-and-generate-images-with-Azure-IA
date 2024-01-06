@@ -16,32 +16,10 @@ const App = () => {
   const [generateResults, setGenerateResults] = useState(null);
   const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const visionConfigured = isVisionConfigured();
   const openAIConfigured = isOpenAIConfigured();
-
-  let errorMessage = '';
-
-  if (!visionConfigured) {
-    errorMessage =
-      'Vision Key or Endpoint is not configured for cognitive services.';
-  }
-
-  if (!openAIConfigured) {
-    errorMessage = 'OpenAI Key is not configured.';
-  }
-
-  if (!visionConfigured && !openAIConfigured) {
-    errorMessage = 'Both Vision and OpenAI Keys are not configured.';
-  }
-
-  if (errorMessage) {
-    return (
-      <div>
-        <p>{errorMessage}</p>
-      </div>
-    );
-  }
 
   const isUrl = (input) => {
     try {
@@ -51,44 +29,47 @@ const App = () => {
       return false;
     }
   };
+
   const handleAnalyzeClick = async () => {
-    setLoading(true);
     try {
-      const response = await analyzeImage(inputContent);
-      setAnalyzeResults(response);
-
-      // Set the display image URL to the URL that was sent as a request to the API
-      setDisplayImageUrl(inputContent);
-
-      // Clear the generated image URL and results
+      // Reset states
       setGeneratedImageUrl(null);
       setGenerateResults(null);
+      setErrorMessage('');
+
+      setLoading(true);
+      const response = await analyzeImage(inputContent);
+      setAnalyzeResults(response);
+      setDisplayImageUrl(inputContent);
+      setGeneratedImageUrl(null);
     } catch (error) {
-      console.error('Error analyzing image:', error.message);
+      setAnalyzeResults(null); // Clear the analyze results
+      // Set the error message in the state
+      setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGenerateClick = async () => {
-    setLoading(true);
     try {
+      // Reset states
+      setAnalyzeResults(null);
+      setErrorMessage('');
+      setLoading(true);
       const generatedImage = await generateImage(inputContent);
+      setGenerateResults(null);
       setGeneratedImageUrl(generatedImage.generatedImageUrl);
-
       setGenerateResults({
         prompt: inputContent,
         generatedImageUrl: generatedImage.generatedImageUrl,
       });
-
-      // Clear the analyze results
-      setAnalyzeResults(null);
-
       if (!isUrl(inputContent) && generatedImage.generatedImageUrl) {
         setDisplayImageUrl(generatedImage.generatedImageUrl);
       }
     } catch (error) {
-      console.error('Error generating image:', error.message);
+      // Set the error message in the state
+      setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -99,51 +80,72 @@ const App = () => {
     setAnalyzeResults(null);
     setGeneratedImageUrl(null);
     setGenerateResults(null);
+    setErrorMessage('');
   };
 
   return (
     <div>
-      <h1>Computer Vision</h1>
-      <p>
-        Analyze an image using Azure Computer Vision or generate an image using
-        OpenAI
-      </p>
+      {!visionConfigured && !openAIConfigured && (
+        <p>
+          Both Vision and OpenAI Keys are not configured. Please check your
+          environment variables and configuration.
+        </p>
+      )}
 
-      {/* Input for Content (URL or Prompt) */}
-      <label>
-        <input
-          placeholder="Enter a URL or prompt"
-          type="text"
-          value={inputContent}
-          onChange={(e) => setInputContent(e.target.value)}
-        />
-      </label>
+      {!visionConfigured && (
+        <p>
+          Vision Key or Endpoint is not configured for cognitive services.
+          Please check your environment variables and configuration.
+        </p>
+      )}
 
-      {/* Analyze Button */}
-      <button onClick={handleAnalyzeClick} disabled={loading}>
-        Analyze
-      </button>
+      {!openAIConfigured && (
+        <p>
+          OpenAI Key is not configured. Please check your environment variables
+          and configuration.
+        </p>
+      )}
 
-      {/* Generate Button */}
-      <button onClick={handleGenerateClick} disabled={loading}>
-        Generate
-      </button>
+      {visionConfigured && openAIConfigured && (
+        <>
+          <h1>Computer Vision</h1>
+          <p>
+            Analyze an image using Azure Computer Vision or generate an image
+            using OpenAI
+          </p>
 
-      {/* Clear Results Button */}
-      <button onClick={handleClearResultsClick} disabled={loading}>
-        Clear Results
-      </button>
+          <label>
+            <input
+              placeholder="Enter a URL or prompt"
+              type="text"
+              value={inputContent}
+              onChange={(e) => setInputContent(e.target.value)}
+            />
+          </label>
 
-      {loading && <p>Processing...</p>}
+          <button onClick={handleAnalyzeClick} disabled={loading}>
+            Analyze
+          </button>
 
-      {/* Displaying Results */}
-      {(analyzeResults || generatedImageUrl) && (
-        <DisplayResults
-          results={analyzeResults || { generatedImageUrl }}
-          displayImageUrl={displayImageUrl}
-          isGenerated={!!generatedImageUrl}
-          inputContent={inputContent}
-        />
+          <button onClick={handleGenerateClick} disabled={loading}>
+            Generate
+          </button>
+
+          <button onClick={handleClearResultsClick}>Clear Results</button>
+
+          {loading && <p>Processing...</p>}
+
+          {errorMessage && <p>{errorMessage}</p>}
+
+          {(analyzeResults || generatedImageUrl) && (
+            <DisplayResults
+              results={analyzeResults || { generatedImageUrl }}
+              displayImageUrl={displayImageUrl}
+              isGenerated={!!generatedImageUrl}
+              inputContent={inputContent}
+            />
+          )}
+        </>
       )}
     </div>
   );

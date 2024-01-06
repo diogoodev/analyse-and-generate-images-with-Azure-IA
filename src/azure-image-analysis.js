@@ -1,5 +1,3 @@
-// azure-image-analysis.js
-
 import fetch from 'node-fetch';
 
 const isConfigured = () => {
@@ -18,6 +16,7 @@ const analyzeImage = async (imageUrl) => {
   if (!isConfigured()) {
     throw new Error('Azure Computer Vision is not properly configured.');
   }
+
   try {
     const params = {
       features: ['tags'],
@@ -27,14 +26,16 @@ const analyzeImage = async (imageUrl) => {
     };
 
     const AZURE_ENDPOINT = process.env.REACT_APP_VISION_ENDPOINT;
-    const AZURE_API = process.env.REACT_APP_VISION_KEY;
+    const AZURE_API_KEY = process.env.REACT_APP_VISION_KEY;
     const response = await fetch(
-      `${AZURE_ENDPOINT}${new URLSearchParams(params)}`,
+      `${AZURE_ENDPOINT}computervision/imageanalysis:analyze?api-version=2023-10-01&${new URLSearchParams(
+        params
+      )}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': AZURE_API,
+          'Ocp-Apim-Subscription-Key': AZURE_API_KEY,
         },
         body: JSON.stringify({ url: imageUrl }),
       }
@@ -47,7 +48,7 @@ const analyzeImage = async (imageUrl) => {
       throw new Error(`Error analyzing image: ${errorData.error.message}`);
     }
   } catch (error) {
-    throw error;
+    throw new Error(`${error.message}`);
   }
 };
 
