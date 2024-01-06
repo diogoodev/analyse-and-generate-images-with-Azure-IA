@@ -13,7 +13,7 @@ const App = () => {
   const [inputContent, setInputContent] = useState('');
   const [analyzeResults, setAnalyzeResults] = useState(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
-  const [generateResults, setGenerateResults] = useState(null);
+  const [setGenerateResults] = useState(null);
   const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
