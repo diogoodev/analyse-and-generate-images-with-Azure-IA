@@ -1,5 +1,3 @@
-// App.js
-
 import React, { useState, useEffect } from 'react';
 import DisplayResults from './DisplayResults';
 import {
@@ -12,27 +10,52 @@ import {
 } from './azure-image-generation';
 
 const App = () => {
-  const [imageUrl, setImageUrl] = useState('');
-  const [results, setResults] = useState(null);
+  const [inputContent, setInputContent] = useState('');
+  const [analyzeResults, setAnalyzeResults] = useState(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
+  const [generateResults, setGenerateResults] = useState(null);
+  const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true); // State to track configuration
+  const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
-    // Check if both services are configured
     setIsConfigured(isVisionConfigured() && isOpenAIConfigured());
   }, []);
 
+  if (!isConfigured) {
+    return (
+      <p>
+        O aplicativo não está configurado corretamente. Por favor, verifique
+        suas variáveis de ambiente.
+      </p>
+    );
+  }
+
+  const isUrl = (input) => {
+    try {
+      new URL(input);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleAnalyzeClick = async () => {
-    // Continue with the analysis only if configured
     if (!isConfigured) {
       return;
     }
 
     setLoading(true);
     try {
-      const response = await analyzeImage(imageUrl);
-      setResults(response);
+      const response = await analyzeImage(inputContent);
+      setAnalyzeResults(response);
+
+      // Set the display image URL to the URL that was sent as a request to the API
+      setDisplayImageUrl(inputContent);
+
+      // Clear the generated image URL and results
+      setGeneratedImageUrl(null);
+      setGenerateResults(null);
     } catch (error) {
       console.error('Error analyzing image:', error.message);
     } finally {
@@ -41,15 +64,26 @@ const App = () => {
   };
 
   const handleGenerateClick = async () => {
-    // Continue with the generation only if configured
     if (!isConfigured) {
       return;
     }
 
     setLoading(true);
     try {
-      const generatedImage = await generateImage(imageUrl); // Assuming imageUrl as the prompt
-      setGeneratedImageUrl(generatedImage);
+      const generatedImage = await generateImage(inputContent);
+      setGeneratedImageUrl(generatedImage.generatedImageUrl);
+
+      setGenerateResults({
+        prompt: inputContent,
+        generatedImageUrl: generatedImage.generatedImageUrl,
+      });
+
+      // Clear the analyze results
+      setAnalyzeResults(null);
+
+      if (!isUrl(inputContent) && generatedImage.generatedImageUrl) {
+        setDisplayImageUrl(generatedImage.generatedImageUrl);
+      }
     } catch (error) {
       console.error('Error generating image:', error.message);
     } finally {
@@ -57,9 +91,15 @@ const App = () => {
     }
   };
 
+  const handleClearResultsClick = () => {
+    setInputContent('');
+    setAnalyzeResults(null);
+    setGeneratedImageUrl(null);
+    setGenerateResults(null);
+  };
+
   return (
     <div>
-      {/* Display a warning if not configured */}
       {!isConfigured && <p>Warning: The app is not properly configured.</p>}
 
       <h1>Computer Vision</h1>
@@ -68,25 +108,40 @@ const App = () => {
         OpenAI
       </p>
 
-      <input
-        type="text"
-        value={imageUrl}
-        onChange={(e) => setImageUrl(e.target.value)}
-      />
+      {/* Input for Content (URL or Prompt) */}
+      <label>
+        <input
+          placeholder="Enter a URL or prompt"
+          type="text"
+          value={inputContent}
+          onChange={(e) => setInputContent(e.target.value)}
+        />
+      </label>
+
+      {/* Analyze Button */}
       <button onClick={handleAnalyzeClick} disabled={loading}>
         Analyze
       </button>
 
+      {/* Generate Button */}
       <button onClick={handleGenerateClick} disabled={loading}>
         Generate
       </button>
 
+      {/* Clear Results Button */}
+      <button onClick={handleClearResultsClick} disabled={loading}>
+        Clear Results
+      </button>
+
       {loading && <p>Processing...</p>}
-      {results && <DisplayResults results={results} imageUrl={imageUrl} />}
-      {generatedImageUrl && (
+
+      {/* Displaying Results */}
+      {(analyzeResults || generatedImageUrl) && (
         <DisplayResults
-          results={{ generatedImageUrl }}
-          imageUrl={generatedImageUrl}
+          results={analyzeResults || { generatedImageUrl }}
+          displayImageUrl={displayImageUrl}
+          isGenerated={!!generatedImageUrl}
+          inputContent={inputContent}
         />
       )}
     </div>

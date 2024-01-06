@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 const isConfigured = () => {
   // Check if environment variables for OpenAI are set
-  return process.env.REACT_APP_OPENAI_API_KEY;
+  return process.env.REACT_APP_OPENAI_API_KEY !== undefined;
 };
 
 const openai = new OpenAI({
@@ -16,6 +16,7 @@ const generateImage = async (prompt) => {
   if (!isConfigured()) {
     throw new Error('OpenAI is not properly configured.');
   }
+
   try {
     const headers = {
       Authorization: `Bearer ${openai.apiKey}`,
@@ -23,7 +24,7 @@ const generateImage = async (prompt) => {
 
     const image = await openai.images.generate(
       {
-        model: 'dall-e-2',
+        model: 'dall-e-3',
         prompt: prompt,
       },
       { headers }
@@ -37,7 +38,11 @@ const generateImage = async (prompt) => {
       throw new Error('Generated image URL not found in the response.');
     }
 
-    return { generatedImageUrl, openaiResponse: image.data };
+    return {
+      generatedImageUrl,
+      prompt: image.data[0]?.prompt,
+      openaiResponse: image.data,
+    };
   } catch (error) {
     throw error;
   }

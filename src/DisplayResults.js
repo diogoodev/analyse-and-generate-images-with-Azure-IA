@@ -2,35 +2,60 @@
 
 import React from 'react';
 
-const DisplayResults = ({ results, imageUrl }) => {
+const DisplayResults = ({
+  results,
+  imageUrl,
+  isGenerated,
+  displayImageUrl,
+  inputContent,
+}) => {
+  console.log('Results:', results);
+  console.log('ImageUrl:', imageUrl);
+  console.log('IsGenerated:', isGenerated);
+  console.log('displayImageUrl', displayImageUrl);
+
   return (
     <div>
       <h2>Computer Vision Analysis</h2>
       <p>Computer Vision analyses:</p>
 
-      {/* Displaying the analyzed image */}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt=""
-          style={{ width: '200px', height: '200px' }}
-        />
-      )}
-
-      {/* Displaying the generated image */}
-      {results && results.generatedImageUrl && (
+      {/* Displaying the analyzed or generated image */}
+      {displayImageUrl && !isGenerated && (
         <div>
-          <h3>Generated Image:</h3>
+          <h3>Analyzed Image:</h3>
           <img
-            src={results.generatedImageUrl}
-            alt=""
+            src={displayImageUrl}
+            alt="Analyzed"
             style={{ width: '200px', height: '200px' }}
           />
         </div>
       )}
 
-      <h3>Analysis Results:</h3>
-      <pre>{JSON.stringify(results, null, 2)}</pre>
+      {results && results.generatedImageUrl && isGenerated && (
+        <div>
+          <h3>Generated Image:</h3>
+          <img
+            src={results.generatedImageUrl}
+            alt="Generated"
+            style={{ width: '200px', height: '200px' }}
+          />
+        </div>
+      )}
+
+      {/* Displaying Analysis or Generate Results based on the button clicked */}
+      {results && (
+        <div>
+          <h3>{isGenerated ? 'Generate' : 'Analysis'} Results:</h3>
+          {isGenerated ? (
+            <div>
+              <p>Prompt: {inputContent}</p>
+              <p>Generated Image URL: {results.generatedImageUrl}</p>
+            </div>
+          ) : (
+            <pre>{JSON.stringify(results, null, 2)}</pre>
+          )}
+        </div>
+      )}
     </div>
   );
 };
