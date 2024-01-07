@@ -6,8 +6,6 @@ const DisplayResults = ({
   displayImageUrl,
   inputContent,
 }) => {
-  console.log('Results:', results);
-
   const renderAnalyzedImage = () => (
     <>
       <h3>Analyzed Image:</h3>

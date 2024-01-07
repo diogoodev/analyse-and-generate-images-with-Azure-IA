@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './index.css';
 import DisplayResults from './DisplayResults';
 import {
   analyzeImage,
@@ -14,7 +15,6 @@ const App = () => {
   const [apiInput, setApiInput] = useState('');
   const [analyzeResults, setAnalyzeResults] = useState(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
-  //const [generateResults, setGenerateResults] = useState(null);
   const [displayImageUrl, setDisplayImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -31,11 +31,17 @@ const App = () => {
     }
   };
 
+  const resetStates = () => {
+    setInputContent('');
+    setAnalyzeResults(null);
+    setGeneratedImageUrl(null);
+    setErrorMessage('');
+  };
+
   const handleAnalyzeClick = async () => {
     try {
       // Reset states
-      setGeneratedImageUrl(null);
-      setErrorMessage('');
+      resetStates();
 
       setLoading(true);
       const response = await analyzeImage(inputContent);
@@ -53,14 +59,9 @@ const App = () => {
 
   const handleGenerateClick = async () => {
     try {
-      // Reset states
       setApiInput(inputContent);
-      setInputContent('');
-      setAnalyzeResults(null);
-      setGeneratedImageUrl(null);
-      setErrorMessage('');
+      resetStates();
       setLoading(true);
-
       const generatedImage = await generateImage(inputContent);
 
       setGeneratedImageUrl(generatedImage.generatedImageUrl);
@@ -77,10 +78,7 @@ const App = () => {
   }; // Remove the semicolon here
 
   const handleClearResultsClick = () => {
-    setInputContent('');
-    setAnalyzeResults(null);
-    setGeneratedImageUrl(null);
-    setErrorMessage('');
+    resetStates();
   };
 
   return (
